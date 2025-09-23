@@ -10,13 +10,22 @@
     "check-types": "turbo run check-types",
     "dev:backend": "turbo run dev --filter=backend",
     "dev:mobile": "turbo run dev --filter=./apps/mobile",
-    "dev:admin": "turbo run dev --filter=admin"
+    "dev:admin": "turbo run dev --filter=admin",
+    "prepare": "husky"
   },
   "devDependencies": {
     "@types/node": "^24.5.2",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.2.0",
     "prettier": "^3.6.2",
     "turbo": "^2.5.6",
     "typescript": "5.9.2"
+  },
+  "lint-staged": {
+    "*.{ts,tsx,md}": [
+      "pnpm lint",
+      "pnpm test --filter=backend"
+    ]
   },
   "packageManager": "pnpm@10.17.0",
   "engines": {
