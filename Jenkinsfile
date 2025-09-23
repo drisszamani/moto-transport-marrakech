@@ -25,10 +25,8 @@ pipeline {
     stage('Backend: tests') {
       steps {
         sh '''
-          docker run --rm -v "$WORKSPACE":/workspace -w /workspace node:20-bullseye sh -c "
-            corepack enable && corepack prepare pnpm@10.17.0 --activate &&
-            pnpm --filter backend test
-          "
+          corepack enable && corepack prepare pnpm@10.17.0 --activate &&
+          pnpm --filter backend test
         '''
       }
     }
@@ -36,10 +34,8 @@ pipeline {
     stage('Web: build') {
       steps {
         sh '''
-          docker run --rm -v "$WORKSPACE":/workspace -w /workspace node:20-bullseye sh -c "
-            corepack enable && corepack prepare pnpm@10.17.0 --activate &&
-            pnpm --filter web build
-          "
+          corepack enable && corepack prepare pnpm@10.17.0 --activate &&
+          pnpm --filter web build
         '''
       }
     }
