@@ -1,5 +1,8 @@
 pipeline {
   agent any
+  parameters {
+    booleanParam(name: 'RUN_TESTS', defaultValue: false, description: 'Exécuter les tests backend ?')
+  }
   environment {
     CI = 'true'
   }
@@ -21,7 +24,26 @@ pipeline {
       }
     }
 
-    stage('Backend: tests') {
+    stage('Lint (monorepo)') {
+      steps {
+        sh '''
+          corepack enable && corepack prepare pnpm@10.17.0 --activate &&
+          pnpm lint
+        '''
+      }
+    }
+
+    stage('Typecheck (monorepo)') {
+      steps {
+        sh '''
+          corepack enable && corepack prepare pnpm@10.17.0 --activate &&
+          pnpm check-types
+        '''
+      }
+    }
+
+    stage('Backend: tests (optionnel)') {
+      when { expression { return params.RUN_TESTS } }
       steps {
         sh '''
           corepack enable && corepack prepare pnpm@10.17.0 --activate &&
@@ -35,6 +57,33 @@ pipeline {
         sh '''
           corepack enable && corepack prepare pnpm@10.17.0 --activate &&
           pnpm --filter web build
+        '''
+      }
+    }
+
+    stage('Admin: build') {
+      steps {
+        sh '''
+          corepack enable && corepack prepare pnpm@10.17.0 --activate &&
+          pnpm --filter admin build
+        '''
+      }
+    }
+
+    stage('Docs: build') {
+      steps {
+        sh '''
+          corepack enable && corepack prepare pnpm@10.17.0 --activate &&
+          pnpm --filter docs build
+        '''
+      }
+    }
+
+    stage('Backend: build') {
+      steps {
+        sh '''
+          corepack enable && corepack prepare pnpm@10.17.0 --activate &&
+          pnpm --filter backend build
         '''
       }
     }
