@@ -48,8 +48,8 @@ pipeline {
       when { expression { fileExists('apps/backend/Dockerfile') } }
       steps {
         script {
-          short = sh(script: "git rev-parse --short=7 HEAD", returnStdout: true).trim()
-          sh "docker build -t moto-backend:${short} -f apps/backend/Dockerfile ."
+          commitShort = sh(script: "git rev-parse --short=7 HEAD", returnStdout: true).trim()
+          sh "docker build -t moto-backend:${commitShort} -f apps/backend/Dockerfile ."
           // docker push ... (optionnel) -> nécessite cred
         }
       }
