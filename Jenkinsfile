@@ -14,10 +14,10 @@ pipeline {
       steps {
         // installe deps à la racine en utilisant pnpm (corepack dans image node)
         sh '''
-          docker run --rm -v "$WORKSPACE":/workspace -w /workspace node:20-bullseye sh -c "
+            docker run --rm -v /workspace:/workspace -w /workspace node:20-bullseye sh -c "
             corepack enable && corepack prepare pnpm@10.17.0 --activate &&
             pnpm install -w
-          "
+        "
         '''
       }
     }
