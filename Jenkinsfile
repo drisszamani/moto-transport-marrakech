@@ -44,12 +44,11 @@ pipeline {
       }
     }
 
-    stage('(Optional) Build backend Docker image') {
+    stage('Optional: Build backend Docker image') {
       when { expression { fileExists('apps/backend/Dockerfile') } }
       steps {
-        // tag avec commit court
         script {
-          def short = sh(script: "git rev-parse --short=7 HEAD", returnStdout: true).trim()
+          short = sh(script: "git rev-parse --short=7 HEAD", returnStdout: true).trim()
           sh "docker build -t moto-backend:${short} -f apps/backend/Dockerfile ."
           // docker push ... (optionnel) -> nécessite cred
         }
