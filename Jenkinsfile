@@ -19,7 +19,7 @@ pipeline {
         sh '''
             corepack enable && corepack prepare pnpm@10.17.0 --activate &&
             pnpm --version &&
-            pnpm install -w
+            pnpm install -r
         '''
       }
     }
