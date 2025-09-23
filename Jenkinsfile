@@ -12,12 +12,11 @@ pipeline {
 
     stage('Install deps') {
       steps {
-        // installe deps à la racine en utilisant pnpm (corepack dans image node)
+        // installe deps à la racine en utilisant pnpm (Corepack dans l'image Jenkins)
         sh '''
-            docker run --rm -v /workspace:/workspace -w /workspace node:20-bullseye sh -c "
             corepack enable && corepack prepare pnpm@10.17.0 --activate &&
+            pnpm --version &&
             pnpm install -w
-        "
         '''
       }
     }
