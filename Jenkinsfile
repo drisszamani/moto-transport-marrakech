@@ -82,8 +82,7 @@ pipeline {
                         corepack enable && corepack prepare pnpm@10.17.0 --activate &&
                         pnpm --filter web build
                     '''
-                }
-            ),
+                },
                 'Build Admin App' : {
                     sh '''
                         corepack enable && corepack prepare pnpm@10.17.0 --activate &&
