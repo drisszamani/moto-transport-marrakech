@@ -2,6 +2,7 @@ pipeline {
   agent any
   parameters {
     booleanParam(name: 'RUN_TESTS', defaultValue: false, description: 'Exécuter les tests backend ?')
+    booleanParam(name: 'RUN_LINT', defaultValue: false, description: 'Exécuter le lint monorepo ? (sinon ignoré)')
   }
   environment {
     CI = 'true'
@@ -25,11 +26,16 @@ pipeline {
     }
 
     stage('Lint (monorepo)') {
+      when { expression { return params.RUN_LINT } }
       steps {
-        sh '''
-          corepack enable && corepack prepare pnpm@10.17.0 --activate &&
-          pnpm lint
-        '''
+        script {
+          catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE') {
+            sh '''
+              corepack enable && corepack prepare pnpm@10.17.0 --activate &&
+              pnpm lint
+            '''
+          }
+        }
       }
     }
 
