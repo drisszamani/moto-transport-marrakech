@@ -14,6 +14,16 @@ pipeline {
       }
     }
 
+    stage ('Gitleaks Scan') {
+        steps {
+            // Scanner tout le repo à la recherche de secrets avec l'image Docker Gitleaks
+            sh '''
+                docker run --rm -v $PWD:/repo zricethezav/gitleaks:latest detect --source=/repo --no-git --report-path=gitleaks-report.json || true
+            '''
+            // Optionnellement, archiver le rapport
+            archiveArtifacts artifacts: 'gitleaks-report.json', allowEmptyArchive: true
+        }
+    }
     stage('Install deps') {
       steps {
         // installe deps à la racine en utilisant pnpm (Corepack dans l'image Jenkins)
