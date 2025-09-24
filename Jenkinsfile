@@ -53,7 +53,7 @@ pipeline {
             withSonarQubeEnv('sonarqube-otaxi'){
                 sh '''
                     sonar-scanner \
-                      -Dsonar.projectKey=moto-transport \
+                      -Dsonar.projectKey=O-Taxi \
                       -Dsonar.sources=. \
                       -Dsonar.host.url=$SONAR_HOST_URL \
                       -Dsonar.login=$SONAR_AUTH_TOKEN
