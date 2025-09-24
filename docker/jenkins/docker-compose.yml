@@ -1,6 +1,7 @@
 services:
   jenkins:
     build: .
+    platform: linux/amd64
     container_name: jenkins-local
     user: root            # root facilite l'accès au socket docker 
     ports:
