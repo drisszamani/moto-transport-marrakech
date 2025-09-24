@@ -49,17 +49,17 @@ pipeline {
     }
 
     stage('SonarQube analysis') {
-      steps {
-        withEnv(["SONAR_TOKEN=${SONAR_TOKEN}"]) {
-          sh '''
-            sonar-scanner \
-              -Dsonar.projectKey=moto-transport \
-              -Dsonar.sources=. \
-              -Dsonar.host.url=http://sonarqube:9000 \
-              -Dsonar.login=$SONAR_TOKEN
-          '''
+        steps {
+            withSonarQubeEnv('sonarqube-otaxi'){
+                sh '''
+                    sonar-scanner \
+                      -Dsonar.projectKey= moto-transport \
+                      -Dsonar.sources=. \
+                      -Dsonar.host.url=$SONAR_HOST_URL \
+                      -Dsonar.login=$SONAR_AUTH_TOKEN
+                ''' 
+            }
         }
-      }
     }
 
     stage('Backend: tests (optionnel)') {
