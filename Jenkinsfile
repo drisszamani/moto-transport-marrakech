@@ -56,7 +56,7 @@ pipeline {
                       -Dsonar.projectKey=O-Taxi \
                       -Dsonar.sources=. \
                       -Dsonar.host.url=$SONAR_HOST_URL \
-                      -Dsonar.login=$SONAR_AUTH_TOKEN
+                      -Dsonar.token=$SONAR_AUTH_TOKEN
                 ''' 
             }
         }
