@@ -57,9 +57,14 @@ pipeline {
                       -Dsonar.sources=. \
                       -Dsonar.host.url=$SONAR_HOST_URL \
                       -Dsonar.token=$SONAR_AUTH_TOKEN
-                ''' 
-                // waitForQualityGate abortPipeline: true
+                '''
             }
+        }
+    }
+
+    stage('Wait for SonarQube Quality Gate') {
+        steps {
+            waitForQualityGate abortPipeline: true
         }
     }
 
