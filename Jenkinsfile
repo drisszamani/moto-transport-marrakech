@@ -104,7 +104,7 @@ pipeline {
             )
         }
     }
-}
+
 
 
     stage('Optional: Build backend Docker image') {
