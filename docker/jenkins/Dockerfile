@@ -16,6 +16,11 @@ RUN curl -fsSL https://download.docker.com/linux/debian/gpg | gpg --dearmor -o /
  && apt-get update \
  && apt-get install -y docker-ce-cli docker-compose-plugin
 
+RUN curl -Lo /usr/local/bin/sonar-scanner-cli.zip https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-5.0.1.3006-linux.zip \
+ && unzip /usr/local/bin/sonar-scanner-cli.zip -d /opt \
+ && ln -s /opt/sonar-scanner-*/bin/sonar-scanner /usr/local/bin/sonar-scanner \
+ && rm /usr/local/bin/sonar-scanner-cli.zip
+
 # Node 20 (pour pnpm / builds)
 RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
  && apt-get install -y nodejs
