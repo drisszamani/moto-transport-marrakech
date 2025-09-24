@@ -58,6 +58,7 @@ pipeline {
                       -Dsonar.host.url=$SONAR_HOST_URL \
                       -Dsonar.token=$SONAR_AUTH_TOKEN
                 ''' 
+                waitForQualityGate abortPipeline: true
             }
         }
     }
@@ -72,41 +73,40 @@ pipeline {
       }
     }
 
-    stage('Web: build') {
-      steps {
-        sh '''
-          corepack enable && corepack prepare pnpm@10.17.0 --activate &&
-          pnpm --filter web build
-        '''
-      }
-    }
 
-    stage('Admin: build') {
-      steps {
-        sh '''
-          corepack enable && corepack prepare pnpm@10.17.0 --activate &&
-          pnpm --filter admin build
-        '''
-      }
+    stage('Build Apps') {
+        steps {
+            parallel (
+                'Build Web App' : {
+                    sh '''
+                        corepack enable && corepack prepare pnpm@10.17.0 --activate &&
+                        pnpm --filter web build
+                    '''
+                }
+            ),
+                'Build Admin App' : {
+                    sh '''
+                        corepack enable && corepack prepare pnpm@10.17.0 --activate &&
+                        pnpm --filter admin build
+                    '''
+                },
+                'Build Docs' : {
+                    sh '''
+                        corepack enable && corepack prepare pnpm@10.17.0 --activate &&
+                        pnpm --filter docs build
+                    '''
+                },
+                'Build Backend' : {
+                    sh '''
+                        corepack enable && corepack prepare pnpm@10.17.0 --activate &&
+                        pnpm --filter backend build
+                    '''
+                }
+            )
+        }
     }
+}
 
-    stage('Docs: build') {
-      steps {
-        sh '''
-          corepack enable && corepack prepare pnpm@10.17.0 --activate &&
-          pnpm --filter docs build
-        '''
-      }
-    }
-
-    stage('Backend: build') {
-      steps {
-        sh '''
-          corepack enable && corepack prepare pnpm@10.17.0 --activate &&
-          pnpm --filter backend build
-        '''
-      }
-    }
 
     stage('Optional: Build backend Docker image') {
       when { expression { fileExists('apps/backend/Dockerfile') } }
