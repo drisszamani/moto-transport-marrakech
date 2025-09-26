@@ -60,7 +60,7 @@ pipeline {
 
     stage('SonarQube analysis') {
         steps {
-            withSonarQubeEnv('O-Taxi-SonarQube') {
+            withSonarQubeEnv('O-Taxi') {
                 sh '''
                     sonar-scanner \
                       -Dsonar.projectKey=O-Taxi \
