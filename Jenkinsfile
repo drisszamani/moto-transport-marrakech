@@ -65,13 +65,13 @@ pipeline {
                     sonar-scanner \
                       -Dsonar.projectKey=O-Taxi \
                       -Dsonar.sources=. \
-                      -Dsonar.host.url=$SONAR_HOST_URL \
-                      -Dsonar.token=$SONAR_AUTH_TOKEN
+                      -Dsonar.host.url=http://localhost:9000 \
+                      -Dsonar.token=sqp_0d50e67166f31525b049fc62a843c05a0c14010a
                 '''
             }
         }
     }
-
+    
     stage('Wait for SonarQube Quality Gate') {
         steps {
             waitForQualityGate abortPipeline: true
