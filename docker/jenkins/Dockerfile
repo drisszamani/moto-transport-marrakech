@@ -10,20 +10,19 @@ RUN apt-get update && apt-get install -y \
   && rm -rf /var/lib/apt/lists/*
 
 # Docker CLI & compose plugin (installe le client docker)
-ADD https://download.docker.com/linux/debian/gpg /usr/share/keyrings/docker-archive-keyring.gpg | gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg \
+RUN curl -fsSL https://download.docker.com/linux/debian/gpg | gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg \
  && echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/debian $(lsb_release -cs) stable" \
     > /etc/apt/sources.list.d/docker.list \
  && apt-get update \
  && apt-get install -y docker-ce-cli docker-compose-plugin
 
-ADD https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-5.0.1.3006-linux.zip /usr/local/bin/sonar-scanner-cli.zip \
+RUN curl -fsSL -o /usr/local/bin/sonar-scanner-cli.zip https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-5.0.1.3006-linux.zip \
  && unzip /usr/local/bin/sonar-scanner-cli.zip -d /opt \
  && ln -s /opt/sonar-scanner-*/bin/sonar-scanner /usr/local/bin/sonar-scanner \
  && rm /usr/local/bin/sonar-scanner-cli.zip
 
 # Node 20 (pour pnpm / builds)
-ADD https://deb.nodesource.com/setup_20.x /usr/local/bin/setup_20.x \
- && bash /usr/local/bin/setup_20.x \
+RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
  && apt-get install -y nodejs
 
 # Corepack + pnpm
