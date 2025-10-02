@@ -1,5 +1,8 @@
 pipeline {
   agent any
+  triggers {
+    githubPush()
+  }
   parameters {
     booleanParam(name: 'RUN_TESTS', defaultValue: false, description: 'Exécuter les tests backend ?')
     booleanParam(name: 'RUN_LINT', defaultValue: false, description: 'Exécuter le lint monorepo ? (sinon ignoré)')
