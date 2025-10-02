@@ -143,13 +143,10 @@ pipeline {
       archiveArtifacts artifacts: 'apps/backend/**/build/**,apps/web/.next/**', allowEmptyArchive: true
       junit allowEmptyResults: true, testResults: '**/test-results-*.xml'
     }
-  }
-   post {
-        success {
-            slackSend channel: '#jenkins', message: 'Pipeline succeeded!'
-        }
-        failure {
-            slackSend channel: '#jenkins', message: 'Pipeline failed!'
-        }
+    success {
+        slackSend channel: '#jenkins', message: 'Pipeline succeeded!'
+    }
+    failure {
+        slackSend channel: '#jenkins', message: 'Pipeline failed!'
     }
 }
