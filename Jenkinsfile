@@ -1,6 +1,6 @@
 pipeline {
   agent any
-  
+
   triggers {
     githubPush()
   }
@@ -144,4 +144,12 @@ pipeline {
       junit allowEmptyResults: true, testResults: '**/test-results-*.xml'
     }
   }
+   post {
+        success {
+            slackSend channel: '#jenkins', message: 'Pipeline succeeded!'
+        }
+        failure {
+            slackSend channel: '#jenkins', message: 'Pipeline failed!'
+        }
+    }
 }
