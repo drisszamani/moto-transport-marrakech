@@ -1,5 +1,6 @@
 pipeline {
   agent any
+
   triggers {
     githubPush()
   }
@@ -147,6 +148,6 @@ pipeline {
         }
         failure {
             slackSend channel: '#jenkins', message: 'Pipeline failed!'
-        }x@
+        }
   }
 }
