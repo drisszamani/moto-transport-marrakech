@@ -126,7 +126,7 @@ pipeline {
 
 
 
-    stage('Build Docker Images') {
+stage('Build Docker Images') {
   steps {
     script {
       commitShort = sh(script: "git rev-parse --short=7 HEAD", returnStdout: true).trim()
