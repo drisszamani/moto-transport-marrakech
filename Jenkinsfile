@@ -126,28 +126,29 @@ pipeline {
 
 
 
-stage('Build Docker Images') {
-  steps {
-    script {
-      commitShort = sh(script: "git rev-parse --short=7 HEAD", returnStdout: true).trim()
-      
-      parallel (
-        'Build Backend Docker' : {
-          when { expression { fileExists('apps/backend/Dockerfile') } }
-          sh "docker build -t moto-backend:${commitShort} -f apps/backend/Dockerfile apps/backend/"
-        },
-        'Build Web Docker' : {
-          when { expression { fileExists('apps/web/Dockerfile') } }
-          sh "docker build -t moto-web:${commitShort} -f apps/web/Dockerfile apps/web/"
-        },
-        'Build Admin Docker' : {
-          when { expression { fileExists('apps/admin/Dockerfile') } }
-          sh "docker build -t moto-admin:${commitShort} -f apps/admin/Dockerfile apps/admin/"
+    stage('Build Docker Images') {
+      steps {
+        script {
+          commitShort = sh(script: "git rev-parse --short=7 HEAD", returnStdout: true).trim()
+          
+          parallel (
+            'Build Backend Docker' : {
+              when { expression { fileExists('apps/backend/Dockerfile') } }
+              sh "docker build -t moto-backend:${commitShort} -f apps/backend/Dockerfile apps/backend/"
+            },
+            'Build Web Docker' : {
+              when { expression { fileExists('apps/web/Dockerfile') } }
+              sh "docker build -t moto-web:${commitShort} -f apps/web/Dockerfile apps/web/"
+            },
+            'Build Admin Docker' : {
+              when { expression { fileExists('apps/admin/Dockerfile') } }
+              sh "docker build -t moto-admin:${commitShort} -f apps/admin/Dockerfile apps/admin/"
+            }
+          )
         }
-      )
+      }
     }
   }
-}
 
   post {
     always {
@@ -155,11 +156,10 @@ stage('Build Docker Images') {
       junit allowEmptyResults: true, testResults: '**/test-results-*.xml'
     }
     success {
-            slackSend channel: '#jenkins', message: 'Pipeline succeeded!'
-        }
-        failure {
-            slackSend channel: '#jenkins', message: 'Pipeline failed!'
-        }
-  }
+      slackSend channel: '#jenkins', message: 'Pipeline succeeded!'
+    }
+    failure {
+      slackSend channel: '#jenkins', message: 'Pipeline failed!'
+    }
 }
 }
