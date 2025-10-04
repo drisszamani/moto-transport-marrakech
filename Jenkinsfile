@@ -76,11 +76,11 @@ pipeline {
         }
     }
 
-    stage('Wait for SonarQube Quality Gate') {
-        steps {
-            waitForQualityGate abortPipeline: false
-        }
-    }
+    // stage('Wait for SonarQube Quality Gate') {
+    //     steps {
+    //         waitForQualityGate abortPipeline: false
+    //     }
+    // }
 
     stage('Backend: tests (optionnel)') {
       when { expression { return params.RUN_TESTS } }
