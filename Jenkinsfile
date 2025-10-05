@@ -133,7 +133,7 @@ pipeline {
           steps {
             script {
               def commitShort = sh(script: "git rev-parse --short=7 HEAD", returnStdout: true).trim()
-              sh "docker build -t moto-backend:${commitShort} -f apps/backend/Dockerfile apps/backend/"
+              sh "docker build -t moto-backend:${commitShort} -f apps/backend/Dockerfile ."
             }
           }
         }
@@ -142,7 +142,7 @@ pipeline {
           steps {
             script {
               def commitShort = sh(script: "git rev-parse --short=7 HEAD", returnStdout: true).trim()
-              sh "docker build -t moto-web:${commitShort} -f apps/web/Dockerfile apps/web/"
+              sh "docker build -t moto-web:${commitShort} -f apps/web/Dockerfile ."
             }
           }
         }
@@ -151,7 +151,7 @@ pipeline {
           steps {
             script {
               def commitShort = sh(script: "git rev-parse --short=7 HEAD", returnStdout: true).trim()
-              sh "docker build -t moto-admin:${commitShort} -f apps/admin/Dockerfile apps/admin/"
+              sh "docker build -t moto-admin:${commitShort} -f apps/admin/Dockerfile ."
             }
           }
         }
