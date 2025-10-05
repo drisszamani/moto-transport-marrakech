@@ -7,7 +7,10 @@ RUN corepack enable && corepack prepare pnpm@10.17.0 --activate
 ENV HUSKY=0
 
 COPY pnpm-lock.yaml pnpm-workspace.yaml package.json ./
-COPY packages/*/package.json ./packages/*/
+RUN mkdir -p packages/eslint-config packages/typescript-config packages/ui
+COPY packages/eslint-config/package.json ./packages/eslint-config/package.json
+COPY packages/typescript-config/package.json ./packages/typescript-config/package.json
+COPY packages/ui/package.json ./packages/ui/package.json
 COPY apps/admin/package.json ./apps/admin/package.json
 
 RUN pnpm install --no-frozen-lockfile --ignore-scripts

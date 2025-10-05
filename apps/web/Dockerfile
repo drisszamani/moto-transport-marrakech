@@ -10,7 +10,11 @@ ENV HUSKY=0
 
 # Copy root manifests and workspace package.jsons for proper install
 COPY pnpm-lock.yaml pnpm-workspace.yaml package.json ./
-COPY packages/*/package.json ./packages/*/
+# Copy manifests for internal packages explicitly (avoid glob issues)
+RUN mkdir -p packages/eslint-config packages/typescript-config packages/ui
+COPY packages/eslint-config/package.json ./packages/eslint-config/package.json
+COPY packages/typescript-config/package.json ./packages/typescript-config/package.json
+COPY packages/ui/package.json ./packages/ui/package.json
 COPY apps/web/package.json ./apps/web/package.json
 
 RUN pnpm install --no-frozen-lockfile --ignore-scripts
