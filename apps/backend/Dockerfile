@@ -1,55 +1,46 @@
-# Stage 1 : Build
-FROM node:20-bullseye AS build
+######## Backend (NestJS) Dockerfile ########
 
-WORKDIR /app
+# Stage 1: Install workspace deps from repo root
+FROM node:20-bullseye AS deps
+WORKDIR /repo
+RUN corepack enable && corepack prepare pnpm@10.17.0 --activate
 
-# Copy package file
-COPY package*.json ./
-COPY pnpm-lock.yaml ./
+COPY pnpm-lock.yaml pnpm-workspace.yaml package.json ./
+COPY apps/backend/package.json ./apps/backend/package.json
 
-# Install pnpm 
-RUN npm instll - g pnpm 
-
-# Install dependencies
 RUN pnpm install --frozen-lockfile
 
-# Copy source code
-COPY . .
+# Stage 2: Build backend
+FROM node:20-bullseye AS build
+WORKDIR /repo
+RUN corepack enable && corepack prepare pnpm@10.17.0 --activate
 
-# Build the application
-RUN pnpm build
+COPY --from=deps /repo/node_modules ./node_modules
+COPY --from=deps /repo/apps/backend/package.json ./apps/backend/package.json
+COPY apps/backend ./apps/backend
 
-# Stage 2 : Production
+RUN pnpm --filter backend... build
+
+# Stage 3: Runtime
 FROM node:20-bullseye-slim AS production
-
 WORKDIR /app
+ENV NODE_ENV=production
 
-# Install pnpm
-RUN npm install -g pnpm
+# Only prod deps for backend
+RUN corepack enable && corepack prepare pnpm@10.17.0 --activate
+COPY pnpm-lock.yaml pnpm-workspace.yaml package.json ./
+COPY apps/backend/package.json ./apps/backend/package.json
+RUN pnpm install --frozen-lockfile --prod --filter backend...
 
-# Copy package files
-COPY package*.json ./
-COPY pnpm-lock.yaml ./
+# Copy built files
+COPY --from=build /repo/apps/backend/dist ./dist
 
-# Install only production dependencies
-RUN pnpm install --frozen-lockfile --prod
-
-# Copy built files from the build stage
-COPY --from=build /app/dist ./dist
-
-# Create a non-root user to run the application
-RUN addgroup -g 1001 -S nodejs
-RUN adduser -S nestjs -u 1001
-
-# Change ownership of the application files
+# Non-root user
+RUN addgroup -g 1001 -S nodejs \
+ && adduser -S nestjs -u 1001
 RUN chown -R nestjs:nodejs /app
 USER nestjs
 
-# Expose the application port
 EXPOSE 3000
-
-# Health Check
-HEALTHCHECK --interval=30s --timeout=5s --start-period=5s CMD curl -f http://localhost:3000/health || exit 1
-
-# Start the application
+HEALTHCHECK --interval=30s --timeout=5s --start-period=5s CMD node -e "require('http').get('http://localhost:3000/health',()=>process.exit(0)).on('error',()=>process.exit(1))"
 CMD ["node", "dist/main.js"]

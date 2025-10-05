@@ -1,66 +1,57 @@
-# Stage 1 : Dependencies
-FROM node:20-bullseye AS build
-RUN apk add --no-cache libc6-compat
-WORKDIR /app
+######## Web app Dockerfile (Next.js standalone) ########
 
-# Copy package files
-COPY package*.json pnpm-lock.yaml ./
-COPY packages/ ./packages/
+# Stage 1: Install workspace deps from repo root
+FROM node:20-bullseye AS deps
+WORKDIR /repo
 
-# Install dependencies
+# Use corepack pnpm
+RUN corepack enable && corepack prepare pnpm@10.17.0 --activate
+
+# Copy root manifests and workspace package.jsons for proper install
+COPY pnpm-lock.yaml pnpm-workspace.yaml package.json ./
+COPY packages/*/package.json ./packages/*/
+COPY apps/web/package.json ./apps/web/package.json
+
 RUN pnpm install --frozen-lockfile
 
-# Stage 2: Builder
+# Stage 2: Build only the web app
 FROM node:20-bullseye AS builder
+WORKDIR /repo
+RUN corepack enable && corepack prepare pnpm@10.17.0 --activate
+
+# Bring node_modules from deps layer
+COPY --from=deps /repo/node_modules ./node_modules
+COPY --from=deps /repo/packages ./packages
+COPY --from=deps /repo/apps/web/package.json ./apps/web/package.json
+
+# Copy source code for the web app and shared packages
+COPY apps/web ./apps/web
+COPY packages ./packages
+
+ENV NEXT_TELEMETRY_DISABLED=1
+ENV NODE_ENV=production
+
+RUN pnpm --filter web... build
+
+# Stage 3: Runtime image
+FROM node:20-bullseye-slim AS runner
 WORKDIR /app
-
-# Copy dependencies from deps stage 
-COPY --from=deps /app/node_modules ./node_modules
-COPY --from=deps /app/packages ./packages
-
-# Copy source code
-COPY . .
-
-# Set environnement variables for build 
-ENV NEXT_TELEMETRY_DISABLED 1
-ENV NODE_ENV production
-
-# Build the application
-RUN pnpm run build
-
-# Stage 3 : Runner
-FROM node:20-bullseye AS runner
-WORKDIR /app 
-
-# Set environment
-ENV NODE_ENV production
-ENV NEXT_TELEMETRY_DISABLED 1
+ENV NODE_ENV=production
+ENV NEXT_TELEMETRY_DISABLED=1
 
 # Create non-root user
-RUN addgroup --system --gid 1001 nodejs 
-RUN adduser --system --uid 1001 nextsjs 
+RUN addgroup --system --gid 1001 nodejs \
+ && adduser --system --uid 1001 nextjs
 
-# Copy built application
-COPY --from=builder /app/public ./public
+# Copy built app from builder
+COPY --from=builder /repo/apps/web/public ./public
+RUN mkdir -p .next && chown nextjs:nodejs .next
+COPY --from=builder --chown=nextjs:nodejs /repo/apps/web/.next/standalone ./
+COPY --from=builder --chown=nextjs:nodejs /repo/apps/web/.next/static ./.next/static
 
-# Set correct permissions for prerender cache
-RUN mkdir .next 
-RUN chown nextjs:nodejs .next
-
-# Copy built Next.js application
-COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
-COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
-
-# Switch to non-root user
 USER nextjs
-
-# Expose port
 EXPOSE 3000
-
-# Health check
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-  CMD wget --no-verbose --tries=1 --spider http://localhost:3000/api/health || exit 1
-
-# Start the application
+  CMD node -e "require('http').get('http://localhost:3000', r=>process.exit(0)).on('error',()=>process.exit(1))"
 CMD ["node", "server.js"]
 
