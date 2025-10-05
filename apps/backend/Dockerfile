@@ -17,9 +17,14 @@ WORKDIR /repo
 RUN corepack enable && corepack prepare pnpm@10.17.0 --activate
 
 COPY --from=deps /repo/node_modules ./node_modules
+COPY --from=deps /repo/pnpm-lock.yaml ./
+COPY --from=deps /repo/pnpm-workspace.yaml ./
+COPY --from=deps /repo/package.json ./
 COPY --from=deps /repo/apps/backend/package.json ./apps/backend/package.json
 COPY apps/backend ./apps/backend
 
+# Ensure CLI binaries are present in PATH during build (node_modules/.bin)
+ENV PATH=/repo/node_modules/.bin:$PATH
 RUN pnpm --filter backend... build
 
 # Stage 3: Runtime

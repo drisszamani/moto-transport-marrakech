@@ -13,7 +13,7 @@ COPY pnpm-lock.yaml pnpm-workspace.yaml package.json ./
 COPY packages/*/package.json ./packages/*/
 COPY apps/web/package.json ./apps/web/package.json
 
-RUN pnpm install --frozen-lockfile --ignore-scripts
+RUN pnpm install --no-frozen-lockfile --ignore-scripts
 
 # Stage 2: Build only the web app
 FROM node:20-bullseye AS builder
