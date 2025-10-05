@@ -6,13 +6,14 @@ WORKDIR /repo
 
 # Use corepack pnpm
 RUN corepack enable && corepack prepare pnpm@10.17.0 --activate
+ENV HUSKY=0
 
 # Copy root manifests and workspace package.jsons for proper install
 COPY pnpm-lock.yaml pnpm-workspace.yaml package.json ./
 COPY packages/*/package.json ./packages/*/
 COPY apps/web/package.json ./apps/web/package.json
 
-RUN pnpm install --frozen-lockfile
+RUN pnpm install --frozen-lockfile --ignore-scripts
 
 # Stage 2: Build only the web app
 FROM node:20-bullseye AS builder

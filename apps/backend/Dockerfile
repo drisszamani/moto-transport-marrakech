@@ -4,11 +4,12 @@
 FROM node:20-bullseye AS deps
 WORKDIR /repo
 RUN corepack enable && corepack prepare pnpm@10.17.0 --activate
+ENV HUSKY=0
 
 COPY pnpm-lock.yaml pnpm-workspace.yaml package.json ./
 COPY apps/backend/package.json ./apps/backend/package.json
 
-RUN pnpm install --frozen-lockfile
+RUN pnpm install --frozen-lockfile --ignore-scripts
 
 # Stage 2: Build backend
 FROM node:20-bullseye AS build
@@ -28,9 +29,10 @@ ENV NODE_ENV=production
 
 # Only prod deps for backend
 RUN corepack enable && corepack prepare pnpm@10.17.0 --activate
+ENV HUSKY=0
 COPY pnpm-lock.yaml pnpm-workspace.yaml package.json ./
 COPY apps/backend/package.json ./apps/backend/package.json
-RUN pnpm install --frozen-lockfile --prod --filter backend...
+RUN pnpm install --frozen-lockfile --prod --filter backend... --ignore-scripts
 
 # Copy built files
 COPY --from=build /repo/apps/backend/dist ./dist
