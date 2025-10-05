@@ -127,24 +127,33 @@ pipeline {
 
 
     stage('Build Docker Images') {
-      steps {
-        script {
-          commitShort = sh(script: "git rev-parse --short=7 HEAD", returnStdout: true).trim()
-          
-          parallel (
-            'Build Backend Docker' : {
-              when { expression { fileExists('apps/backend/Dockerfile') } }
+      parallel {
+        stage('Build Backend Docker') {
+          when { expression { return fileExists('apps/backend/Dockerfile') } }
+          steps {
+            script {
+              def commitShort = sh(script: "git rev-parse --short=7 HEAD", returnStdout: true).trim()
               sh "docker build -t moto-backend:${commitShort} -f apps/backend/Dockerfile apps/backend/"
-            },
-            'Build Web Docker' : {
-              when { expression { fileExists('apps/web/Dockerfile') } }
+            }
+          }
+        }
+        stage('Build Web Docker') {
+          when { expression { return fileExists('apps/web/Dockerfile') } }
+          steps {
+            script {
+              def commitShort = sh(script: "git rev-parse --short=7 HEAD", returnStdout: true).trim()
               sh "docker build -t moto-web:${commitShort} -f apps/web/Dockerfile apps/web/"
-            },
-            'Build Admin Docker' : {
-              when { expression { fileExists('apps/admin/Dockerfile') } }
+            }
+          }
+        }
+        stage('Build Admin Docker') {
+          when { expression { return fileExists('apps/admin/Dockerfile') } }
+          steps {
+            script {
+              def commitShort = sh(script: "git rev-parse --short=7 HEAD", returnStdout: true).trim()
               sh "docker build -t moto-admin:${commitShort} -f apps/admin/Dockerfile apps/admin/"
             }
-          )
+          }
         }
       }
     }
