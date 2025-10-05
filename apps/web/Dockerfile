@@ -35,6 +35,7 @@ COPY packages ./packages
 
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV NODE_ENV=production
+ENV PATH=/repo/node_modules/.bin:$PATH
 
 RUN pnpm --filter web... build
 
