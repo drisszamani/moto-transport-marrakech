@@ -25,6 +25,8 @@ COPY apps/backend ./apps/backend
 
 # Ensure CLI binaries are present in PATH during build (node_modules/.bin)
 ENV PATH=/repo/node_modules/.bin:$PATH
+
+RUN pnpm --filter backend... install --no-frozen-lockfile --ignore-scripts
 RUN pnpm --filter backend... build
 
 # Stage 3: Runtime
