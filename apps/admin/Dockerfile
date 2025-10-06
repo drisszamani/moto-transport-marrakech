@@ -31,7 +31,7 @@ ENV NEXT_TELEMETRY_DISABLED=1
 ENV NODE_ENV=production 
 ENV PATH=/repo/node_modules/.bin:$PATH
 
-RUN pnpm --filter admin... install --prod --no-frozen-lockfile --ignore-scripts
+RUN pnpm --filter admin... install --no-frozen-lockfile --ignore-scripts
 RUN pnpm --filter admin... build
 
 # Stage 3 : Runner 

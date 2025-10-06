@@ -37,7 +37,8 @@ ENV NEXT_TELEMETRY_DISABLED=1
 ENV NODE_ENV=production
 ENV PATH=/repo/node_modules/.bin:$PATH
 
-RUN pnpm --filter web... install --prod --no-frozen-lockfile --ignore-scripts
+# Install with dev deps so TypeScript config and build tooling exist
+RUN pnpm --filter web... install --no-frozen-lockfile --ignore-scripts
 RUN pnpm --filter web... build
 
 # Stage 3: Runtime image

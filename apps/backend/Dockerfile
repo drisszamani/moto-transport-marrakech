@@ -44,9 +44,9 @@ RUN pnpm install --frozen-lockfile --prod --filter backend... --ignore-scripts
 # Copy built files
 COPY --from=build /repo/apps/backend/dist ./dist
 
-# Non-root user
-RUN addgroup -g 1001 -S nodejs \
- && adduser -S nestjs -u 1001
+# Non-root user (Debian slim)
+RUN groupadd -g 1001 nodejs \
+ && useradd -u 1001 -g nodejs -s /usr/sbin/nologin -m nestjs
 RUN chown -R nestjs:nodejs /app
 USER nestjs
 
