@@ -16,7 +16,7 @@ COPY apps/admin/package.json ./apps/admin/package.json
 RUN pnpm install --no-frozen-lockfile --ignore-scripts
 
 # Stage 2: Build only the admin app
-FROM node:20-bullseye as builder 
+FROM node:20-bullseye AS builder 
 WORKDIR /repo
 RUN corepack enable && corepack prepare pnpm@10.17.0 --activate
 
@@ -34,7 +34,7 @@ ENV PATH=/repo/node_modules/.bin:$PATH
 RUN pnpm --filter admin... build 
 
 # Stage 3 : Runner 
-FROM node:20-bullseye-slim as runner
+FROM node:20-bullseye-slim AS runner
 WORKDIR /app
 ENV NODE_ENV=production 
 ENV NEXT_TELEMETRY_DISABLED=1 
