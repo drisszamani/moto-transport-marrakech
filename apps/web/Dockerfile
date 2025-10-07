@@ -63,3 +63,4 @@ HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
   CMD node -e "require('http').get('http://localhost:3000', r=>process.exit(0)).on('error',()=>process.exit(1))"
 CMD ["node", "server.js"]
 
+ 
