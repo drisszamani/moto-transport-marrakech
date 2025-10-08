@@ -4,9 +4,10 @@ FROM jenkins/jenkins:lts-jdk21
 USER root
 
 # outils de base + git + lsb-release pour nodesource
-RUN apt-get update && apt-get install -y \
-  ca-certificates curl gnupg2 lsb-release apt-transport-https \
-  git sudo python3 python3-pip gpg \
+RUN for i in $(seq 1 5); do apt-get update && break || sleep 1; done \
+  && apt-get install -y \
+  ca-certificates curl gnupg lsb-release \
+  git sudo python3 python3-pip \
   && rm -rf /var/lib/apt/lists/*
 
 # Docker CLI & compose plugin (installe le client docker)

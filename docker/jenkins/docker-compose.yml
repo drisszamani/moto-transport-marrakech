@@ -1,5 +1,8 @@
 services:
   jenkins:
+    dns:
+      - 8.8.8.8
+      - 1.1.1.1
     build: .
     platform: linux/amd64
     container_name: jenkins-local
