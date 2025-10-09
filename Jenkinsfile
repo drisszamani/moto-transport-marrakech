@@ -10,7 +10,6 @@ pipeline {
   }
   environment {
     CI = 'true'
-    TRIVY_CACHE_DIR = "${WORKSPACE}/.trivy-cache"
   }
   stages {
     stage('Checkout') {
@@ -20,20 +19,20 @@ pipeline {
     }
 
     stage('Gitleaks Scan') {
-      steps {
+    steps {
         sh '''
-          docker run --rm -v $PWD:/repo zricethezav/gitleaks:latest detect --source=/repo --no-git --report-path=gitleaks-report.json || true
+            docker run --rm -v $PWD:/repo zricethezav/gitleaks:latest detect --source=/repo --no-git --report-path=gitleaks-report.json || true
         '''
         archiveArtifacts artifacts: 'gitleaks-report.json', allowEmptyArchive: true
-      }
     }
-
+}
     stage('Install deps') {
       steps {
+        // installe deps à la racine en utilisant pnpm (Corepack dans l'image Jenkins)
         sh '''
-          corepack enable && corepack prepare pnpm@10.17.0 --activate &&
-          pnpm --version &&
-          pnpm install -r
+            corepack enable && corepack prepare pnpm@10.17.0 --activate &&
+            pnpm --version &&
+            pnpm install -r
         '''
       }
     }
@@ -62,45 +61,52 @@ pipeline {
     }
 
     stage('Trivy FS Scan') {
-      steps {
-        script {
-          catchError(buildResult: 'UNSTABLE', stageResult: 'UNSTABLE') {
-            sh """
-              echo "Lancement de l'analyse Trivy FS sur le workspace..."
-              mkdir -p ${TRIVY_CACHE_DIR}
+  steps {
+    script {
+      catchError(buildResult: 'UNSTABLE', stageResult: 'UNSTABLE') {
+        sh """
+          echo "🔍 Lancement de l'analyse Trivy FS sur le workspace..."
+          mkdir -p \$(pwd)/.trivy-cache
 
-              docker run --rm \
-                -v ${WORKSPACE}:/repo \
-                -v ${TRIVY_CACHE_DIR}:/root/.cache/ \
-                aquasec/trivy:latest fs \
-                  --scanners vuln,misconfig \
-                  --severity HIGH,CRITICAL \
-                  --format sarif \
-                  --output /repo/trivy-fs-report.sarif \
-                  --no-progress \
-                  /repo
+          docker run --rm \
+            -v \$(pwd):/repo \
+            -v \$(pwd)/.trivy-cache:/root/.cache/ \
+            aquasec/trivy:latest fs \
+              --scanners vuln,config \
+              --severity HIGH,CRITICAL \
+              --format sarif \
+              --output /repo/trivy-fs-report.sarif \
+              --no-progress \
+              /repo
 
-              echo "Analyse Trivy FS terminée"
-            """
-          }
-          archiveArtifacts artifacts: 'trivy-fs-report.sarif', allowEmptyArchive: true
-        }
+          echo "Analyse Trivy FS terminée avec succès"
+        """
       }
+      archiveArtifacts artifacts: 'trivy-fs-report.sarif', allowEmptyArchive: true
     }
+  }
+}
+
 
     stage('SonarQube analysis') {
-      steps {
-        withSonarQubeEnv('O-Taxi') {
-          sh '''
-            export SONAR_SCANNER_OPTS="-Xmx1024m -XX:+UseSerialGC -XX:+ExitOnOutOfMemoryError" &&
-            sonar-scanner \
-              -Dsonar.projectKey=O-Taxi \
-              -Dsonar.sources=. \
-              -Dsonar.host.url=$SONAR_HOST_URL
-          '''
+        steps {
+            withSonarQubeEnv('O-Taxi') {
+                sh '''
+                    export SONAR_SCANNER_OPTS="-Xmx1024m -XX:+UseSerialGC -XX:+ExitOnOutOfMemoryError" &&
+                    sonar-scanner \
+                      -Dsonar.projectKey=O-Taxi \
+                      -Dsonar.sources=. \
+                      -Dsonar.host.url=$SONAR_HOST_URL
+                '''
+            }
         }
-      }
     }
+
+    // stage('Wait for SonarQube Quality Gate') {
+    //     steps {
+    //         waitForQualityGate abortPipeline: false
+    //     }
+    // }
 
     stage('Backend: tests (optionnel)') {
       when { expression { return params.RUN_TESTS } }
@@ -112,36 +118,39 @@ pipeline {
       }
     }
 
+
     stage('Build Apps') {
-      steps {
-        parallel (
-          'Build Web App' : {
-            sh '''
-              corepack enable && corepack prepare pnpm@10.17.0 --activate &&
-              pnpm --filter web build
-            '''
-          },
-          'Build Admin App' : {
-            sh '''
-              corepack enable && corepack prepare pnpm@10.17.0 --activate &&
-              pnpm --filter admin build
-            '''
-          },
-          'Build Docs' : {
-            sh '''
-              corepack enable && corepack prepare pnpm@10.17.0 --activate &&
-              pnpm --filter docs build
-            '''
-          },
-          'Build Backend' : {
-            sh '''
-              corepack enable && corepack prepare pnpm@10.17.0 --activate &&
-              pnpm --filter backend build
-            '''
-          }
-        )
-      }
+        steps {
+            parallel (
+                'Build Web App' : {
+                    sh '''
+                        corepack enable && corepack prepare pnpm@10.17.0 --activate &&
+                        pnpm --filter web build
+                    '''
+                },
+                'Build Admin App' : {
+                    sh '''
+                        corepack enable && corepack prepare pnpm@10.17.0 --activate &&
+                        pnpm --filter admin build
+                    '''
+                },
+                'Build Docs' : {
+                    sh '''
+                        corepack enable && corepack prepare pnpm@10.17.0 --activate &&
+                        pnpm --filter docs build
+                    '''
+                },
+                'Build Backend' : {
+                    sh '''
+                        corepack enable && corepack prepare pnpm@10.17.0 --activate &&
+                        pnpm --filter backend build
+                    '''
+                }
+            )
+        }
     }
+
+
 
     stage('Build Docker Images') {
       parallel {
@@ -151,7 +160,6 @@ pipeline {
             script {
               def commitShort = sh(script: "git rev-parse --short=7 HEAD", returnStdout: true).trim()
               sh "docker build -t moto-backend:${commitShort} -f apps/backend/Dockerfile ."
-              env.BACKEND_IMAGE = "moto-backend:${commitShort}"
             }
           }
         }
@@ -161,7 +169,6 @@ pipeline {
             script {
               def commitShort = sh(script: "git rev-parse --short=7 HEAD", returnStdout: true).trim()
               sh "docker build -t moto-web:${commitShort} -f apps/web/Dockerfile ."
-              env.WEB_IMAGE = "moto-web:${commitShort}"
             }
           }
         }
@@ -171,7 +178,6 @@ pipeline {
             script {
               def commitShort = sh(script: "git rev-parse --short=7 HEAD", returnStdout: true).trim()
               sh "docker build -t moto-admin:${commitShort} -f apps/admin/Dockerfile ."
-              env.ADMIN_IMAGE = "moto-admin:${commitShort}"
             }
           }
         }
@@ -179,102 +185,88 @@ pipeline {
     }
 
     stage('Trivy Image Scan') {
-      parallel {
+  parallel {
 
-        stage('Scan Backend Image') {
-          when { expression { return env.BACKEND_IMAGE != null } }
-          steps {
-            script {
-              catchError(buildResult: 'UNSTABLE', stageResult: 'UNSTABLE') {
-                sh """
-                  echo "Scanning ${env.BACKEND_IMAGE} with Trivy..."
-                  mkdir -p ${TRIVY_CACHE_DIR}
-                  
-                  # Vérifier que l'image existe
-                  docker images ${env.BACKEND_IMAGE}
-                  
-                  docker run --rm \
-                    -v /var/run/docker.sock:/var/run/docker.sock \
-                    -v ${TRIVY_CACHE_DIR}:/root/.cache/ \
-                    -v ${WORKSPACE}:/repo \
-                    aquasec/trivy:latest image \
-                      --severity HIGH,CRITICAL \
-                      --format sarif \
-                      --output /repo/trivy-backend.sarif \
-                      --no-progress \
-                      ${env.BACKEND_IMAGE}
-                  
-                  echo "Trivy backend scan completed"
-                """
-              }
-              archiveArtifacts artifacts: 'trivy-backend.sarif', allowEmptyArchive: true
-            }
+    stage('Scan Backend Image') {
+      steps {
+        script {
+          def commitShort = sh(script: "git rev-parse --short=7 HEAD", returnStdout: true).trim()
+          catchError(buildResult: 'UNSTABLE', stageResult: 'UNSTABLE') {
+            sh """
+              echo "🔍 Scanning moto-backend:${commitShort} with Trivy..."
+              mkdir -p \$(pwd)/.trivy-cache
+              docker run --rm \
+  -v \$(pwd)/.trivy-cache:/root/.cache/ \
+  -v \$(pwd):/repo \
+  -v /var/run/docker.sock:/var/run/docker.sock \
+  aquasec/trivy:latest image \
+    --severity HIGH,CRITICAL \
+    --format sarif \
+    --output /repo/trivy-backend.sarif \
+    --no-progress \
+    moto-backend:${commitShort}
+              echo "Trivy backend scan completed"
+            """
           }
-        }
-
-        stage('Scan Web Image') {
-          when { expression { return env.WEB_IMAGE != null } }
-          steps {
-            script {
-              catchError(buildResult: 'UNSTABLE', stageResult: 'UNSTABLE') {
-                sh """
-                  echo "Scanning ${env.WEB_IMAGE} with Trivy..."
-                  mkdir -p ${TRIVY_CACHE_DIR}
-                  
-                  # Vérifier que l'image existe
-                  docker images ${env.WEB_IMAGE}
-                  
-                  docker run --rm \
-                    -v /var/run/docker.sock:/var/run/docker.sock \
-                    -v ${TRIVY_CACHE_DIR}:/root/.cache/ \
-                    -v ${WORKSPACE}:/repo \
-                    aquasec/trivy:latest image \
-                      --severity HIGH,CRITICAL \
-                      --format sarif \
-                      --output /repo/trivy-web.sarif \
-                      --no-progress \
-                      ${env.WEB_IMAGE}
-                  
-                  echo "Trivy web scan completed"
-                """
-              }
-              archiveArtifacts artifacts: 'trivy-web.sarif', allowEmptyArchive: true
-            }
-          }
-        }
-
-        stage('Scan Admin Image') {
-          when { expression { return env.ADMIN_IMAGE != null } }
-          steps {
-            script {
-              catchError(buildResult: 'UNSTABLE', stageResult: 'UNSTABLE') {
-                sh """
-                  echo "Scanning ${env.ADMIN_IMAGE} with Trivy..."
-                  mkdir -p ${TRIVY_CACHE_DIR}
-                  
-                  # Vérifier que l'image existe
-                  docker images ${env.ADMIN_IMAGE}
-                  
-                  docker run --rm \
-                    -v /var/run/docker.sock:/var/run/docker.sock \
-                    -v ${TRIVY_CACHE_DIR}:/root/.cache/ \
-                    -v ${WORKSPACE}:/repo \
-                    aquasec/trivy:latest image \
-                      --severity HIGH,CRITICAL \
-                      --format sarif \
-                      --output /repo/trivy-admin.sarif \
-                      --no-progress \
-                      ${env.ADMIN_IMAGE}
-                  
-                  echo "Trivy admin scan completed"
-                """
-              }
-              archiveArtifacts artifacts: 'trivy-admin.sarif', allowEmptyArchive: true
-            }
-          }
+          archiveArtifacts artifacts: 'trivy-backend.sarif', allowEmptyArchive: true
         }
       }
     }
+
+    stage('Scan Web Image') {
+      steps {
+        script {
+          def commitShort = sh(script: "git rev-parse --short=7 HEAD", returnStdout: true).trim()
+          catchError(buildResult: 'UNSTABLE', stageResult: 'UNSTABLE') {
+            sh """
+              echo "Scanning moto-web:${commitShort} with Trivy..."
+              mkdir -p \$(pwd)/.trivy-cache
+              docker run --rm \
+  -v \$(pwd)/.trivy-cache:/root/.cache/ \
+  -v \$(pwd):/repo \
+  -v /var/run/docker.sock:/var/run/docker.sock \
+  aquasec/trivy:latest image \
+    --severity HIGH,CRITICAL \
+    --format sarif \
+    --output /repo/trivy-web.sarif \
+    --no-progress \
+    moto-web:${commitShort}
+              echo "Trivy web scan completed"
+            """
+          }
+          archiveArtifacts artifacts: 'trivy-web.sarif', allowEmptyArchive: true
+        }
+      }
+    }
+
+    stage('Scan Admin Image') {
+      steps {
+        script {
+          def commitShort = sh(script: "git rev-parse --short=7 HEAD", returnStdout: true).trim()
+          catchError(buildResult: 'UNSTABLE', stageResult: 'UNSTABLE') {
+            sh """
+              echo "Scanning moto-admin:${commitShort} with Trivy..."
+              mkdir -p \$(pwd)/.trivy-cache
+              docker run --rm \
+  -v \$(pwd)/.trivy-cache:/root/.cache/ \
+  -v \$(pwd):/repo \
+  -v /var/run/docker.sock:/var/run/docker.sock \
+  aquasec/trivy:latest image \
+    --severity HIGH,CRITICAL \
+    --format sarif \
+    --output /repo/trivy-admin.sarif \
+    --no-progress \
+    moto-admin:${commitShort}
+              echo "Trivy admin scan completed"
+            """
+          }
+          archiveArtifacts artifacts: 'trivy-admin.sarif', allowEmptyArchive: true
+        }
+      }
+    }
+  }
+}
+
   }
 
   post {
@@ -283,10 +275,10 @@ pipeline {
       junit allowEmptyResults: true, testResults: '**/test-results-*.xml'
     }
     success {
-      slackSend channel: '#jenkins', message: "Pipeline succeeded! Commit: ${env.GIT_COMMIT?.take(7)}"
+      slackSend channel: '#jenkins', message: 'Pipeline succeeded!'
     }
     failure {
-      slackSend channel: '#jenkins', message: "Pipeline failed! Commit: ${env.GIT_COMMIT?.take(7)}"
+      slackSend channel: '#jenkins', message: 'Pipeline failed!'
     }
-  }
+}
 }
