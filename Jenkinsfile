@@ -23,7 +23,7 @@ pipeline {
         sh '''
             docker run --rm -v $PWD:/repo zricethezav/gitleaks:latest detect --source=/repo --no-git --report-path=gitleaks-report.json || true
         '''
-        archiveArtifacts artifacts: 'gitleaks-report.json', allowEmptyArchive: true
+        archiveArtifacts artifacts: 'trivy-fs-report.sarif', allowEmptyArchive: true
     }
 }
     stage('Install deps') {
@@ -84,7 +84,7 @@ pipeline {
       }
       sh 'ls -l /repo || true'
       sh 'ls -l . || true' 
-      archiveArtifacts artifacts: '**/trivy-backend.sarif', allowEmptyArchive: true
+      archiveArtifacts artifacts: '**/trivy-fs-report.sarif', allowEmptyArchive: true
     }
   }
 }
@@ -210,9 +210,9 @@ pipeline {
               echo "Trivy backend scan completed"
             """
           }
-          sh 'ls -l /repo || true'
-          sh 'ls -l . || true' 
-          archiveArtifacts artifacts: '**/trivy-backend.sarif', allowEmptyArchive: true
+            sh 'ls -l /repo || true'
+            sh 'ls -l . || true' 
+          archiveArtifacts artifacts: 'trivy-fs-backend.sarif', allowEmptyArchive: true
         }
       }
     }
@@ -240,7 +240,7 @@ pipeline {
           }
           sh 'ls -l /repo || true'
           sh 'ls -l . || true' 
-          archiveArtifacts artifacts: '**/trivy-backend.sarif', allowEmptyArchive: true
+          archiveArtifacts artifacts: '**/trivy-web.sarif', allowEmptyArchive: true
         }
       }
     }
@@ -268,7 +268,7 @@ pipeline {
           }
           sh 'ls -l /repo || true'
           sh 'ls -l . || true' 
-          archiveArtifacts artifacts: '**/trivy-backend.sarif', allowEmptyArchive: true
+          archiveArtifacts artifacts: '**/trivy-admin.sarif', allowEmptyArchive: true
         }
       }
     }
