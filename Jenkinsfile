@@ -83,8 +83,9 @@ pipeline {
         """
       }
       sh 'ls -l /repo || true'
-      sh 'ls -l . || true' 
-      archiveArtifacts artifacts: '**/trivy-fs-report.sarif', allowEmptyArchive: true
+      sh 'ls -l . || true'
+      sh 'touch trivy-fs-report.sarif'
+      archiveArtifacts artifacts: 'trivy-fs-report.sarif', allowEmptyArchive: true
     }
   }
 }
@@ -212,7 +213,8 @@ pipeline {
           }
             sh 'ls -l /repo || true'
             sh 'ls -l . || true' 
-          archiveArtifacts artifacts: 'trivy-fs-backend.sarif', allowEmptyArchive: true
+            sh 'touch trivy-backend.sarif'
+            archiveArtifacts artifacts: 'trivy-backend.sarif', allowEmptyArchive: true
         }
       }
     }
@@ -240,7 +242,8 @@ pipeline {
           }
           sh 'ls -l /repo || true'
           sh 'ls -l . || true' 
-          archiveArtifacts artifacts: '**/trivy-web.sarif', allowEmptyArchive: true
+          sh 'touch trivy-web.sarif'
+          archiveArtifacts artifacts: 'trivy-web.sarif', allowEmptyArchive: true
         }
       }
     }
@@ -268,7 +271,8 @@ pipeline {
           }
           sh 'ls -l /repo || true'
           sh 'ls -l . || true' 
-          archiveArtifacts artifacts: '**/trivy-admin.sarif', allowEmptyArchive: true
+          sh 'touch trivy-admin.sarif'  
+          archiveArtifacts artifacts: 'trivy-admin.sarif', allowEmptyArchive: true
         }
       }
     }
