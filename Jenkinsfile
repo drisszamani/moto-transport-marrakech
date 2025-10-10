@@ -82,7 +82,9 @@ pipeline {
           echo "Analyse Trivy FS terminée avec succès"
         """
       }
-      archiveArtifacts artifacts: 'trivy-fs-report.sarif', allowEmptyArchive: true
+      sh 'ls -l /repo || true'
+      sh 'ls -l . || true' 
+      archiveArtifacts artifacts: '**/trivy-backend.sarif', allowEmptyArchive: true
     }
   }
 }
@@ -196,19 +198,21 @@ pipeline {
               echo "🔍 Scanning moto-backend:${commitShort} with Trivy..."
               mkdir -p \$(pwd)/.trivy-cache
               docker run --rm \
-  -v \$(pwd)/.trivy-cache:/root/.cache/ \
-  -v \$(pwd):/repo \
-  -v /var/run/docker.sock:/var/run/docker.sock \
-  aquasec/trivy:latest image \
-    --severity HIGH,CRITICAL \
-    --format sarif \
-    --output /repo/trivy-backend.sarif \
-    --no-progress \
-    moto-backend:${commitShort}
+              -v \$(pwd)/.trivy-cache:/root/.cache/ \
+              -v \$(pwd):/repo \
+              -v /var/run/docker.sock:/var/run/docker.sock \
+                aquasec/trivy:latest image \
+              --severity HIGH,CRITICAL \
+              --format sarif \
+              --output /repo/trivy-backend.sarif \
+              --no-progress \
+              moto-backend:${commitShort}
               echo "Trivy backend scan completed"
             """
           }
-          archiveArtifacts artifacts: 'trivy-backend.sarif', allowEmptyArchive: true
+          sh 'ls -l /repo || true'
+          sh 'ls -l . || true' 
+          archiveArtifacts artifacts: '**/trivy-backend.sarif', allowEmptyArchive: true
         }
       }
     }
@@ -222,19 +226,21 @@ pipeline {
               echo "Scanning moto-web:${commitShort} with Trivy..."
               mkdir -p \$(pwd)/.trivy-cache
               docker run --rm \
-  -v \$(pwd)/.trivy-cache:/root/.cache/ \
-  -v \$(pwd):/repo \
-  -v /var/run/docker.sock:/var/run/docker.sock \
-  aquasec/trivy:latest image \
-    --severity HIGH,CRITICAL \
-    --format sarif \
-    --output /repo/trivy-web.sarif \
-    --no-progress \
-    moto-web:${commitShort}
+              -v \$(pwd)/.trivy-cache:/root/.cache/ \
+              -v \$(pwd):/repo \
+              -v /var/run/docker.sock:/var/run/docker.sock \
+                aquasec/trivy:latest image \
+              --severity HIGH,CRITICAL \
+              --format sarif \
+              --output /repo/trivy-web.sarif \
+              --no-progress \
+              moto-web:${commitShort}
               echo "Trivy web scan completed"
             """
           }
-          archiveArtifacts artifacts: 'trivy-web.sarif', allowEmptyArchive: true
+          sh 'ls -l /repo || true'
+          sh 'ls -l . || true' 
+          archiveArtifacts artifacts: '**/trivy-backend.sarif', allowEmptyArchive: true
         }
       }
     }
@@ -248,19 +254,21 @@ pipeline {
               echo "Scanning moto-admin:${commitShort} with Trivy..."
               mkdir -p \$(pwd)/.trivy-cache
               docker run --rm \
-  -v \$(pwd)/.trivy-cache:/root/.cache/ \
-  -v \$(pwd):/repo \
-  -v /var/run/docker.sock:/var/run/docker.sock \
-  aquasec/trivy:latest image \
-    --severity HIGH,CRITICAL \
-    --format sarif \
-    --output /repo/trivy-admin.sarif \
-    --no-progress \
-    moto-admin:${commitShort}
+                -v \$(pwd)/.trivy-cache:/root/.cache/ \
+                -v \$(pwd):/repo \
+                -v /var/run/docker.sock:/var/run/docker.sock \
+                  aquasec/trivy:latest image \
+              --severity HIGH,CRITICAL \
+              --format sarif \
+              --output /repo/trivy-admin.sarif \
+              --no-progress \
+              moto-admin:${commitShort}
               echo "Trivy admin scan completed"
             """
           }
-          archiveArtifacts artifacts: 'trivy-admin.sarif', allowEmptyArchive: true
+          sh 'ls -l /repo || true'
+          sh 'ls -l . || true' 
+          archiveArtifacts artifacts: '**/trivy-backend.sarif', allowEmptyArchive: true
         }
       }
     }
