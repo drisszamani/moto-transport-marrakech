@@ -82,7 +82,9 @@ pipeline {
           echo "Analyse Trivy FS terminée avec succès"
         """
       }
-      archiveArtifacts artifacts: 'trivy-fs-report.sarif', allowEmptyArchive: true
+      sh 'ls -l /repo || true'
+      sh 'ls -l . || true' 
+      archiveArtifacts artifacts: '**/trivy-backend.sarif', allowEmptyArchive: true
     }
   }
 }
@@ -208,7 +210,9 @@ pipeline {
               echo "Trivy backend scan completed"
             """
           }
-          archiveArtifacts artifacts: 'trivy-backend.sarif', allowEmptyArchive: true
+          sh 'ls -l /repo || true'
+          sh 'ls -l . || true' 
+          archiveArtifacts artifacts: '**/trivy-backend.sarif', allowEmptyArchive: true
         }
       }
     }
@@ -234,7 +238,9 @@ pipeline {
               echo "Trivy web scan completed"
             """
           }
-          archiveArtifacts artifacts: 'trivy-web.sarif', allowEmptyArchive: true
+          sh 'ls -l /repo || true'
+          sh 'ls -l . || true' 
+          archiveArtifacts artifacts: '**/trivy-backend.sarif', allowEmptyArchive: true
         }
       }
     }
@@ -260,7 +266,9 @@ pipeline {
               echo "Trivy admin scan completed"
             """
           }
-          archiveArtifacts artifacts: 'trivy-admin.sarif', allowEmptyArchive: true
+          sh 'ls -l /repo || true'
+          sh 'ls -l . || true' 
+          archiveArtifacts artifacts: '**/trivy-backend.sarif', allowEmptyArchive: true
         }
       }
     }
