@@ -39,4 +39,5 @@ yarn-error.log*
 
 # IDEs and editors
 package-lock.json
-yarn.lock
+yarn.lockdocker/jenkins/jenkins_home_backup.tar.gz
+docker/jenkins/azureuser@20.208.136.248
