@@ -290,7 +290,7 @@ pipeline {
       slackSend channel: '#jenkins', message: 'Pipeline succeeded!'
     }
     failure {
-      slackSend channel: '#jenkins', message: 'Pipeline failed!'
+      slackSend channel: '#jenkins', message: 'Pipeline failed'
     }
 }
 }
