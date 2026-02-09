@@ -2,7 +2,7 @@
 
 Une plateforme complète de transport à moto construite avec un monorepo Turborepo.
 
-## 🏗️ Architecture
+## Architecture
 
 Ce projet utilise un monorepo avec Turborepo pour gérer plusieurs applications :
 
@@ -20,7 +20,7 @@ Ce projet utilise un monorepo avec Turborepo pour gérer plusieurs applications 
 - **`@repo/eslint-config`** - Configuration ESLint
 - **`@repo/typescript-config`** - Configuration TypeScript
 
-## 🚀 Démarrage rapide
+## Démarrage rapide
 
 ### Prérequis
 
@@ -64,7 +64,7 @@ pnpm test                   # Tests de toutes les apps
 pnpm test --filter=backend  # Tests seulement du backend
 ```
 
-## 📱 Applications
+## Applications
 
 ### Web App (`apps/web`)
 - **Port**: 3000
@@ -81,16 +81,16 @@ pnpm test --filter=backend  # Tests seulement du backend
 - **Tech**: React Native, TypeScript
 
 ### Backend (`apps/backend`)
-- **Port**: 3000
+- **Port**: 3002
 - **Description**: API REST et base de données
 - **Tech**: NestJS, TypeORM, PostgreSQL
 
 ### Docs (`apps/docs`)
-- **Port**: 3002
+- **Port**: 3003
 - **Description**: Documentation du projet
 - **Tech**: Next.js, TypeScript
 
-## 🗄️ Base de données
+## Base de données
 
 Le projet utilise PostgreSQL avec Docker :
 
@@ -103,7 +103,7 @@ docker-compose up -d
 docker-compose down
 ```
 
-## 🛠️ Développement
+## Développement
 
 ### Structure du monorepo
 
@@ -130,7 +130,7 @@ moto-transport/
 2. **Frontend** : Créer les composants dans `packages/ui/src/` et les pages dans les apps
 3. **Mobile** : Développer les écrans dans `apps/mobile/`
 
-## 🚀 Déploiement
+## Déploiement
 
 ### Production
 
@@ -150,14 +150,14 @@ Créer les fichiers `.env` dans chaque app selon les besoins :
 - `apps/web/.env.local` - Configuration app web
 - `apps/admin/.env.local` - Configuration app admin
 
-## 📚 Documentation
+## Documentation
 
 - [Turborepo](https://turbo.build/repo/docs)
 - [Next.js](https://nextjs.org/docs)
 - [NestJS](https://docs.nestjs.com/)
 - [TypeORM](https://typeorm.io/)
 
-## 🤝 Contribution
+## Contribution
 
 1. Fork le projet
 2. Créer une branche feature (`git checkout -b feature/AmazingFeature`)
@@ -165,6 +165,6 @@ Créer les fichiers `.env` dans chaque app selon les besoins :
 4. Push vers la branche (`git push origin feature/AmazingFeature`)
 5. Ouvrir une Pull Request
 
-## 📄 Licence
+## Licence
 
 Ce projet est sous licence MIT. Voir le fichier `LICENSE` pour plus de détails.
