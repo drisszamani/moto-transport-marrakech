@@ -14,8 +14,8 @@ services:
       - JAVA_OPTS=-Djenkins.install.runSetupWizard=true
     volumes:
       - jenkins_home:/var/jenkins_home
-      - /var/run/docker.sock:/var/run/docker.sock     # accès docker host
-      - ../../:/workspace:cached                       # monte ton repo pour debug facile (optionnel)
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ../../:/workspace:cached
     networks:
       - ci-net
 volumes:
